@@ -412,6 +412,38 @@ class Youtube
 
 
     /**
+     * @param $playlistId
+     * @return array
+     * @throws \Exception
+     */
+    public function getAllPlaylistItemsByPlaylistId($playlistId) {
+        $playlistItems = [];
+        $params = array(
+            'playlistId' => $playlistId,
+            'part' => 'id, snippet, contentDetails, status',
+            'maxResults' => $maxResults
+        );
+        $raw = $this->getPlaylistItemsByPlaylistIdAdvanced($params, true);
+        if ($raw['results'] !== false) {
+            foreach ($raw['results'] as $result) {
+                $playlistItems[] = $result;
+            }
+            if ($raw['info']['nextPageToken'] !== null) {
+                do {
+                    $params['pageToken'] = $raw['info']['nextPageToken'];
+                    $raw = $this->getPlaylistItemsByPlaylistIdAdvanced($params, true);
+                    if ($raw['results'] !== false) {
+                        foreach ($raw['results'] as $result) {
+                            $playlistItems[] = $result;
+                        }
+                    }
+                } while ($raw['info']['nextPageToken'] !== null);
+            }
+        }
+        return $playlistItems;
+    }
+
+    /**
      * @param $params
      * @param bool|false $pageInfo
      * @return array
